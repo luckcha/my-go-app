@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: book-dealer-deployment
+  labels:
+    app: book-dealer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: book-dealer
+  template:
+    metadata:
+      labels:
+        app: book-dealer
+    spec:
+      containers:
+        - name: book-dealer-container
+          image: dockluck336/my-go-app:latest
+          ports:
+            - containerPort: 10000
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: book-dealer-service
+spec:
+  selector:
+    app: book-dealer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 10000
+  type: LoadBalancer
