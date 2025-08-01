@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux" // New external dependency
 )
 
 type Book struct {
@@ -40,28 +42,33 @@ var Production = []Dealer{
 
 func homepage(w http.ResponseWriter, r *http.Request) {
 	log.Println("Endpont hit:homepage")
-	fmt.Fprintf(w, "Hey there lucky")
+	fmt.Fprintf(w, "Hey there lucky, this is the homepage!")
 }
 
 func returnAllProduct(w http.ResponseWriter, r *http.Request) {
 	log.Println("Endpoint hit: returnAllProduct")
-	w.Header().Set("Content-Type", "application/json") // Set content type for JSON response
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(Product)
 }
+
 func returnAllProduction(w http.ResponseWriter, r *http.Request) {
 	log.Println("Endpoint hit:returnAllProduction")
-	w.Header().Set("Content-Type", "application/json") // Set content type for JSON response
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(Production)
 }
 
 func handleRequests() {
-	// Note: Listen on 0.0.0.0 for Docker container
-	log.Println("Starting server on :10000")
-	http.HandleFunc("/Product", returnAllProduct)
-	http.HandleFunc("/Production", returnAllProduction)
-	http.HandleFunc("/", homepage)
-	log.Fatal(http.ListenAndServe(":10000", nil))
+	// Create a new router
+	myRouter := mux.NewRouter().StrictSlash(true)
 
+	// Register our endpoints
+	log.Println("Starting server on :10000")
+	myRouter.HandleFunc("/Product", returnAllProduct)
+	myRouter.HandleFunc("/Production", returnAllProduction)
+	myRouter.HandleFunc("/", homepage)
+
+	// Start the server with our new router
+	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
 
 func main() {
