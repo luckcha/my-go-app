@@ -19,25 +19,30 @@ jobs:
         uses: actions/checkout@v3
 
       # Step 2: Set up the Go environment.
+      # The version is updated to '1.23' to match your go.mod file.
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.23'
 
-      # Step 3: Download Go module dependencies.
+      # Step 3: Run 'go mod tidy' to ensure go.mod and go.sum are clean and consistent.
+      - name: Clean up go.mod and go.sum
+        run: go mod tidy
+
+      # Step 4: Download Go module dependencies.
       - name: Install dependencies
         run: go mod download
 
-      # Step 4: Build the Go application.
+      # Step 5: Build the Go application.
       - name: Build Go application
         run: go build -v ./...
 
-      # Step 5: Run tests. This is optional but highly recommended for CI.
+      # Step 6: Run tests. This is optional but highly recommended for CI.
       # You should have a test file named with a '_test.go' suffix.
       - name: Run tests (optional but recommended)
         run: go test -v ./...
 
-      # Step 6: Log in to Docker Hub using your secrets.
+      # Step 7: Log in to Docker Hub using your secrets.
       # Ensure you have set DOCKER_USERNAME and DOCKER_PASSWORD in your GitHub repository secrets.
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -45,7 +50,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
-      # Step 7: Build the Docker image from your Dockerfile and push it to Docker Hub.
+      # Step 8: Build the Docker image from your Dockerfile and push it to Docker Hub.
       # The image will have two tags: 'latest' and the specific git commit hash.
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
