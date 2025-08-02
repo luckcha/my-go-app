@@ -1,0 +1,61 @@
+# This workflow is responsible for building and pushing your Go application as a Docker image.
+# It is triggered automatically on every push to the 'main' branch.
+
+name: Go CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    # This job will run on an Ubuntu virtual machine.
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Check out the code from your repository.
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up the Go environment.
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      # Step 3: Download Go module dependencies.
+      - name: Install dependencies
+        run: go mod download
+
+      # Step 4: Build the Go application.
+      - name: Build Go application
+        run: go build -v ./...
+
+      # Step 5: Run tests. This is optional but highly recommended for CI.
+      # You should have a test file named with a '_test.go' suffix.
+      - name: Run tests (optional but recommended)
+        run: go test -v ./...
+
+      # Step 6: Log in to Docker Hub using your secrets.
+      # Ensure you have set DOCKER_USERNAME and DOCKER_PASSWORD in your GitHub repository secrets.
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
+      # Step 7: Build the Docker image from your Dockerfile and push it to Docker Hub.
+      # The image will have two tags: 'latest' and the specific git commit hash.
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            dockluck336/go-ci-cd-example:latest
+            dockluck336/go-ci-cd-example:${{ github.sha }}
+
+  # Note: A separate 'deploy' job would typically be added here
+  # to deploy the newly built Docker image to a cloud service (e.g., AWS, GCP, Azure).
+  # This part of the pipeline is highly dependent on your chosen deployment environment.
